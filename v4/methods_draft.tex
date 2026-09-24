@@ -1,0 +1,90 @@
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Problem formulation and model overview}
+\label{sec:problem}
+We formulate personalized PPG-to-ECG synthesis as conditional generation from a current PPG segment and a subject-matched reference pair. Let $x_i\in\mathbb{R}^{1250\times1}$ and $y_i\in\mathbb{R}^{1250\times1}$ denote the PPG and ECG waveforms for target window $i$, respectively, and let $(x_{r(i)},y_{r(i)})$ denote a distinct reference window from the same subject. PSPFlow maps the target PPG to a shared representation, estimates an ECG-private representation using the shared representation and the reference pair, and decodes the two components into an ECG waveform. The target ECG is used only during training to form supervision and is not an input to the inference pathway. Each window contains 1,250 samples at 125 Hz, corresponding to a 10-s segment.
+
+\subsection{Shared and private representations}
+\label{sec:representations}
+We first normalize each input waveform using training-set statistics and then apply the same trainable shared encoder to the current PPG and ECG. A frozen pretrained encoder supplies an auxiliary anchor representation for each waveform, which is fused with the learned features by the shared encoder. The resulting shared features $s_i^{p},s_i^{e}\in\mathbb{R}^{64\times250}$ represent the components used for cross-modal transfer. To align these components, we normalize them across channels and minimize their mean-squared difference:
+\begin{equation}
+\mathcal{L}_{\mathrm{align}}
+= \frac{1}{64\cdot250}\sum_{t=1}^{250}
+\left\|
+\frac{s_{i,:,t}^{p}}{\|s_{i,:,t}^{p}\|_2+\epsilon}
+-
+\frac{s_{i,:,t}^{e}}{\|s_{i,:,t}^{e}\|_2+\epsilon}
+\right\|_2^2,
+\label{eq:alignment}
+\end{equation}
+where the normalization is applied independently at each temporal position. This objective aligns paired shared features directly and does not introduce explicit negative pairs or a temperature-scaled contrastive classification term.
+
+In parallel, an ECG-private encoder maps the target ECG to $z_i^{e}\in\mathbb{R}^{16\times250}$. The private encoder is trained to retain information useful for reconstructing the target ECG alongside its shared representation. We additionally penalize batch-level correlation between the shared ECG and private ECG features to discourage redundant coding. A variance-floor penalty prevents the private representation from collapsing to a constant feature.
+
+\subsection{Patient-conditioned private prediction and decoding}
+\label{sec:private-prediction}
+We obtain a patient representation $h_i\in\mathbb{R}^{256}$ by applying a frozen reference encoder to the same-subject pair $(x_{r(i)},y_{r(i)})$. The patient representation conditions a private predictor together with the current PPG shared features. Specifically, a learned affine transformation derived from $h_i$ modulates $s_i^{p}$, after which residual convolutional blocks produce the predicted private code $\hat z_i^{e}$. We supervise this prediction against the target ECG-private code with a mean-squared error loss:
+\begin{equation}
+\mathcal{L}_{\mathrm{priv}}
+=\frac{1}{16\cdot250}
+\|\hat z_i^{e}-\operatorname{stopgrad}(z_i^{e})\|_2^2.
+\label{eq:private-supervision}
+\end{equation}
+A joint decoder concatenates $s_i^{p}$ and $\hat z_i^{e}$, processes the fused sequence with residual convolutional blocks, and upsamples it to the input waveform length. The decoded ECG is standardized per window so that the waveform losses focus on morphology rather than absolute amplitude.
+
+\subsection{Waveform objectives and representation training}
+\label{sec:objectives}
+We define the waveform reconstruction objective as a weighted combination of pointwise, derivative, and spectral terms. For prediction $\hat y_i$ and target $y_i$, the pointwise component combines mean-squared error and mean absolute error, while the derivative component compares first differences:
+\begin{equation}
+\mathcal{L}_{\mathrm{wave}}
+= \operatorname{MSE}(\hat y_i,y_i)
++0.5\,\operatorname{MAE}(\hat y_i,y_i)
++0.15\,\operatorname{MAE}(\Delta\hat y_i,\Delta y_i)
++\mathcal{L}_{\mathrm{spec}}.
+\label{eq:waveform-loss}
+\end{equation}
+The spectral term matches the root batch-mean squared Fourier magnitude and adds log-magnitude STFT losses at resolutions of 64, 128, and 256 samples:
+\begin{equation}
+\mathcal{L}_{\mathrm{spec}}
+=2\,\operatorname{MSE}(m_{\mathrm{FFT}}(\hat y),m_{\mathrm{FFT}}(y))
++\frac{0.2}{3}\sum_{n\in\{64,128,256\}}
+\operatorname{MAE}\!\left(\log(1+|\operatorname{STFT}_{n}(\hat y)|),
+\log(1+|\operatorname{STFT}_{n}(y)|)\right),
+\label{eq:spectral-loss}
+\end{equation}
+where $m_{\mathrm{FFT}}(y)=\sqrt{\mathbb{E}_{i}[|\operatorname{RFFT}(y_i)|^2]+10^{-6}}$. We also decode the PPG shared code through an auxiliary PPG decoder and penalize its reconstruction error. The representation stage jointly minimizes target-ECG prediction, cross reconstruction from PPG-shared and ECG-private codes, ECG self reconstruction, PPG reconstruction, private-code supervision, shared alignment, decorrelation, and the private variance penalty:
+\begin{align}
+\mathcal{L}_{\mathrm{rep}}={}&
+\mathcal{L}_{\mathrm{pred}}
++0.5\mathcal{L}_{\mathrm{cross}}
++0.25\mathcal{L}_{\mathrm{self}}
++0.1\mathcal{L}_{\mathrm{PPG}}\\
+&+0.1\mathcal{L}_{\mathrm{priv}}
++0.1\mathcal{L}_{\mathrm{align}}
++0.01\mathcal{L}_{\mathrm{decor}}
++0.01\mathcal{L}_{\mathrm{var}}.
+\label{eq:representation-loss}
+\end{align}
+The shared and private encoders, predictor, and decoder are optimized in this stage, while the pretrained reference encoders remain frozen.
+
+\subsection{Conditional flow and inference}
+\label{sec:flow}
+To model residual variation around the predicted private code, the flow stage defines a target residual $r_i=z_i^{e}-\hat z_i^{e}$ and freezes the representation components learned in the first stage. It samples $z_0\sim\mathcal{N}(0,\sigma^2I)$, with $\sigma=0.25$, draws $t\sim\mathcal{U}(0,1)$, and forms the linear interpolation $z_t=(1-t)z_0+tr_i$. A conditional vector field $v_\theta(z_t,t,s_i^{p},h_i)$ is trained to regress the path velocity $r_i-z_0$:
+\begin{equation}
+\mathcal{L}_{\mathrm{FM}}
+=\mathbb{E}\left[
+\|v_\theta(z_t,t,s_i^{p},h_i)-(r_i-z_0)\|_2^2
+\right].
+\label{eq:flow-matching}
+\end{equation}
+We add an endpoint waveform term by estimating the residual endpoint as $z_t+(1-t)v_\theta(z_t,t,s_i^{p},h_i)$, adding it to $\hat z_i^{e}$, decoding the result, and comparing the waveform with $y_i$. At sampling time, the flow integrates its vector field from a fixed Gaussian draw using eight Euler steps and adds the resulting residual to the predicted private code. For the full-test result reported here, we use the deterministic mean predictor without the flow residual because the flow checkpoint performed substantially worse on the training-only validation set. The reported checkpoint is selected using validation MAE plus RMSE, without using test data for checkpoint selection.
+
+\subsection{Data protocol}
+\label{sec:data-protocol}
+We split windows within subjects and draw each reference from a distinct window belonging to the target subject. Training and validation references are drawn from the training-fit pool, whereas test references are drawn from the test split using a fixed seed. Because the split is not subject-disjoint and reference windows are not constrained to precede their targets in time, these experiments do not establish unseen-patient generalization or causal historical conditioning.
+
+% Implementation caveat: the reported v4 full-test checkpoint uses the deterministic
+% mean predictor. The flow stage is described above because it is part of the trained
+% model, but it was not used to produce the reported full-test result. The reference
+% protocol samples one same-subject window and does not enforce temporal precedence.

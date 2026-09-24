@@ -1,0 +1,31 @@
+python -B -u model/cardioalign_encoder/train.py \
+  --config config/cardioalign_shared_private.yaml \
+  2>&1 | tee logs/train_shared_private.log
+
+ls \
+  results/cardioalign_shared_private/mimic-iv-waveform/checkpoints/VAE-iter-40000.pth \
+  results/IBExtractor/mimic-iv-waveform/checkpoints/IBExtractor-iter-40000.pth
+
+python -B -u main.py \
+  --train \
+  --config_file config/personal_private_rectified_flow.yaml \
+  --model_type ppf \
+  --name personal_private_rectified_flow \
+  2>&1 | tee logs/train_private_flow.log
+
+python -B -u main.py \
+  --config_file config/personal_private_rectified_flow.yaml \
+  --model_type ppf \
+  --condition_type 1 \
+  --mode synthesis \
+  --milestone 10 \
+  --name personal_private_rectified_flow \
+  sample.sampling_steps 10 \
+  sample.num_samples 3 \
+  2>&1 | tee logs/generate_private_flow.log
+
+# 评估
+python -B -u evaluation/run_eval.py \
+  --samples_dir results/rectified_flow_private/mimic-iv-waveform/samples \
+  --sampling_rate 125 \
+  2>&1 | tee logs/eval_private_flow.log

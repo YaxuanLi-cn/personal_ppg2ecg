@@ -1,47 +1,76 @@
 huggingface-cli download --repo-type dataset --resume-download lucky9-cyou/MIMIC-IV-Waveform --local-dir MIMIC-IV-Waveform
 
+python /root/personal_ppg2ecg/data_pipeline/prepare_dataset.py --n-jobs 8
+
+cd /root/personal_ppg2ecg/v0/
 python -u model/cardioalign_encoder/train.py \
   --config config/cardioalign_encoder.yaml \
   --save_dir results/cardioalign_encoder \
-  > /root/autodl-tmp/personal_ppg2ecg/logs/train_vae.log 2>&1
+  2>&1 | tee /root/personal_ppg2ecg/logs/train_vae.log
  
 python -u model/Individual_base_extractor/train.py \
   --config config/ib_extractor.yaml \
   --save_dir results/IBExtractor \
-  > /root/autodl-tmp/personal_ppg2ecg/logs/train_ibe.log 2>&1
+  2>&1 | tee /root/autodl-tmp/personal_ppg2ecg/logs/train_ibe.log
 
-python main.py --train \
+# 通用模型
+python -u main.py --train \
   --config_file config/latent_rectified_flow.yaml \
-  --model_type pf --name latent_rectified_flow --output baseline \
-  > /root/autodl-tmp/personal_ppg2ecg/logs/train_rf_baseline.log 2>&1
+  --model_type pf \
+  --name latent_rectified_flow \
+  --output baseline \
+  2>&1 | tee -a /root/personal_ppg2ecg/logs/train_rf_baseline.log
+
 
 # 产物: results/rectified_flow_baseline/mimic-iv-waveform/checkpoints/checkpoint-100.pt
 
-python main.py --train \
+# 带个体参考
+python -u main.py --train \
   --config_file config/personal_latent_rectified_flow.yaml \
-  --model_type ppf --name personal_latent_rectified_flow --output personal \
-  > /root/autodl-tmp/personal_ppg2ecg/logs/train_rf_personal.log 2>&1
-
-# 基线
-python main.py --config_file config/latent_rectified_flow.yaml \
-  --model_type pf --condition_type 1 --mode synthesis --milestone 10 \
-  --name latent_rectified_flow --output baseline \
-  > /root/autodl-tmp/personal_ppg2ecg/logs/synthesis_baseline.log 2>&1
+  --model_type ppf \
+  --name personal_latent_rectified_flow \
+  --output personal \
+  2>&1 | tee -a /root/personal_ppg2ecg/logs/train_rf_personal.log
 
 
-# 个性化
-python main.py --config_file config/personal_latent_rectified_flow.yaml \
-  --model_type ppf --condition_type 1 --mode synthesis --milestone 10 \
-  --name personal_latent_rectified_flow --output personal \
-  > /root/autodl-tmp/personal_ppg2ecg/logs/synthesis_personal.log 2>&1
+# 基线 - 生成 ECG
+python -u main.py \
+  --config_file config/latent_rectified_flow.yaml \
+  --model_type pf \
+  --condition_type 1 \
+  --mode synthesis \
+  --milestone 10 \
+  --name latent_rectified_flow \
+  --output baseline \
+  2>&1 | tee -a /root/personal_ppg2ecg/logs/synthesis_baseline.log \
+&& \
+python -u evaluation/run_eval.py \
+  --samples_dir /root/personal_ppg2ecg/v0/results/rectified_flow_baseline/mimic-iv-waveform/samples \
+  --sampling_rate 125 \
+  --ecgfounder_ckpt "" \
+  2>&1 | tee -a /root/personal_ppg2ecg/logs/evaluation_baseline.log
+  
 
-# 产物: 各自 results/.../samples/overall_fake_data*.npy 与 overall_gt_data*.npy
+# 个性化 - 生成 ECG
+python -u main.py \
+  --config_file config/personal_latent_rectified_flow.yaml \
+  --model_type ppf \
+  --condition_type 1 \
+  --mode synthesis \
+  --milestone 10 \
+  --name personal_latent_rectified_flow \
+  --output personal \
+  2>&1 | tee -a /root/personal_ppg2ecg/logs/synthesis_personal.log \
+&& \
+python -u evaluation/run_eval.py \
+  --samples_dir /root/personal_ppg2ecg/v0/results/rectified_flow_personal/mimic-iv-waveform/samples \
+  --sampling_rate 125 \
+  --ecgfounder_ckpt "" \
+  2>&1 | tee -a /root/personal_ppg2ecg/logs/evaluation_personal.log
 
-python evaluation/run_eval.py \
-  --samples_dir /root/autodl-tmp/personal_ppg2ecg/results/rectified_flow_personal/mimic-iv-waveform/samples
 
-python evaluation/run_eval.py \
-  --samples_dir /root/autodl-tmp/personal_ppg2ecg/results/rectified_flow_baseline/mimic-iv-waveform/samples
+
+
 
 cat /root/autodl-tmp/personal_ppg2ecg/logs/STATUS.txt
 

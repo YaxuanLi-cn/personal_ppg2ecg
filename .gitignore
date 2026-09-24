@@ -1,3 +1,60 @@
-v*/results
-v0/baseline
-v0/ppf
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.DS_Store
+*.swp
+*.swo
+
+# Credentials and local environment
+.env
+.env.*
+!.env.example
+
+# Local instructions
+AGENTS.md
+prompt0
+**/.devin/
+
+# Raw and processed data
+MIMIC-IV-Waveform/
+mimic-iv-aligned-ppg_ecgII-processed-filtered/*
+!mimic-iv-aligned-ppg_ecgII-processed-filtered/summary.json
+!mimic-iv-aligned-ppg_ecgII-processed-filtered/z_score_mean_std.json
+results_preprocess_smoke/
+
+# Model weights and generated arrays
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.onnx
+*.npy
+*.npz
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.hdf5
+*.mat
+*.parquet
+*.feather
+*.arrow
+*.tfrecord
+*.csv
+*.csv.gz
+*.dat
+*.hea
+
+# Experiment outputs and nested repository
+**/results/
+baseline/
+v0/baseline/
+UniCardio/
+
+# Keep logs tracked intentionally.

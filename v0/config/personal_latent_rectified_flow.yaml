@@ -17,7 +17,7 @@ model:
 solver:
   base_lr: 1.0e-4
   max_steps: 100000
-  results_folder: /root/autodl-tmp/personal_ppg2ecg/results/rectified_flow_personal/mimic-iv-waveform
+  results_folder: results/rectified_flow_personal/mimic-iv-waveform
   gradient_accumulate_every: 1
   save_cycle: 10000  # max_steps // 10
   clip_grad_norm: 1.0
@@ -30,10 +30,10 @@ solver:
     betas: [0.9, 0.96]
 
   vae:
-    checkpoint: "/root/autodl-tmp/personal_ppg2ecg/results/cardioalign_encoder/mimic-iv-waveform/checkpoints/VAE-iter-40000.pth"
+    checkpoint: "results/cardioalign_encoder/mimic-iv-waveform/checkpoints/VAE-iter-40000.pth"
   
   ibe:
-    checkpoint: "/root/autodl-tmp/personal_ppg2ecg/results/IBExtractor/mimic-iv-waveform/checkpoints/IBExtractor-iter-40000.pth"
+    checkpoint: "results/IBExtractor/mimic-iv-waveform/checkpoints/IBExtractor-iter-40000.pth"
   
   scheduler:
     target: engine.lr_sch.ReduceLROnPlateauWithWarmup

@@ -1,6 +1,8 @@
 model:
-  target: model.latent_rectified_flow.rectified_flow.RectifiedFlow
+  target: model.latent_rectified_flow.rectified_flow.PersonalRectifiedFlow
   params:
+    use_shared_private: true
+    private_dim: 4
     feature_size: 4
     temporal_size: 50
     n_layer_enc: 4
@@ -9,30 +11,28 @@ model:
     mlp_hidden_times: 4
     attn_pd: 0.0
     resid_pd: 0.0
-    use_text: False
+    use_text: false
     train_num_points: 4
+    if_personal: true
+    personal_emb_dim: 50
 
 solver:
   base_lr: 1.0e-4
   max_steps: 100000
-  results_folder: results/rectified_flow_baseline/mimic-iv-waveform
+  results_folder: results/rectified_flow_private_no_decor/mimic-iv-waveform
   gradient_accumulate_every: 1
-  save_cycle: 10000  # max_steps // 10
+  save_cycle: 10000
   clip_grad_norm: 1.0
   log_frequency: 100
   ema:
     decay: 0.995
     update_interval: 10
-    
   optimizer:
     betas: [0.9, 0.96]
-
   vae:
-    checkpoint: "results/cardioalign_encoder/mimic-iv-waveform/checkpoints/VAE-iter-40000.pth"
-  
+    checkpoint: results/cardioalign_shared_private_no_decor/mimic-iv-waveform/checkpoints/VAE-iter-40000.pth
   ibe:
-    checkpoint: "results/IBExtractor/mimic-iv-waveform/checkpoints/IBExtractor-iter-40000.pth"
-  
+    checkpoint: results/IBExtractor/mimic-iv-waveform/checkpoints/IBExtractor-iter-40000.pth
   scheduler:
     target: engine.lr_sch.ReduceLROnPlateauWithWarmup
     params:
@@ -42,13 +42,12 @@ solver:
       threshold: 1.0e-2
       threshold_mode: rel
       warmup_lr: 8.0e-4
-      warmup: 1000 
-      verbose: False
-  use_text: False
+      warmup: 1000
+      verbose: false
+  use_text: false
 
-# Optional data and sampling configuration used by main.py
 data:
-  return_type: "pf"
+  return_type: ppf
   train:
     dir: ""
     batch_size: 256
@@ -60,8 +59,7 @@ data:
     num_workers: 32
     pin_memory: true
 
-
-
 sample:
   sampling_steps: 10
+  num_samples: 1
   subset_save_threshold: 100000

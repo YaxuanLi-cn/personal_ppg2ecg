@@ -1,0 +1,21 @@
+{
+  "completed_at": "2026-09-20T13:17:01.237393",
+  "arguments": {
+    "input": "/root/personal_ppg2ecg/MIMIC-IV-Waveform/files/mimic4wdb/0.1.0/waves",
+    "output": "/root/personal_ppg2ecg/mimic-iv-aligned-ppg_ecgII-processed-filtered",
+    "n_jobs": 8,
+    "test_ratio": 0.1,
+    "seed": 42,
+    "chunk_seconds": 300,
+    "max_subjects": 0,
+    "max_windows_per_subject": 0
+  },
+  "subjects_scanned": 198,
+  "raw_windows": 2935313,
+  "read_errors": 0,
+  "split_policy": "random windows within each subject",
+  "samples": {
+    "train": 1609540,
+    "test": 178830
+  }
+}

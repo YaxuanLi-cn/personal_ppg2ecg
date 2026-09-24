@@ -1,6 +1,8 @@
 model:
-  target: model.latent_rectified_flow.rectified_flow.RectifiedFlow
+  target: model.latent_rectified_flow.rectified_flow.PersonalRectifiedFlow
   params:
+    use_shared_private: false
+    private_dim: 4
     feature_size: 4
     temporal_size: 50
     n_layer_enc: 4
@@ -11,11 +13,13 @@ model:
     resid_pd: 0.0
     use_text: False
     train_num_points: 4
+    if_personal: True
+    personal_emb_dim: 50
 
 solver:
   base_lr: 1.0e-4
   max_steps: 100000
-  results_folder: results/rectified_flow_baseline/mimic-iv-waveform
+  results_folder: results/rectified_flow_personal/mimic-iv-waveform
   gradient_accumulate_every: 1
   save_cycle: 10000  # max_steps // 10
   clip_grad_norm: 1.0
@@ -48,7 +52,7 @@ solver:
 
 # Optional data and sampling configuration used by main.py
 data:
-  return_type: "pf"
+  return_type: "ppf"
   train:
     dir: ""
     batch_size: 256
@@ -63,5 +67,6 @@ data:
 
 
 sample:
+  num_samples: 1
   sampling_steps: 10
   subset_save_threshold: 100000

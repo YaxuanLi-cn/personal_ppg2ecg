@@ -1,0 +1,34 @@
+train:
+  save_dir: results/cardioalign_shared_private_no_decor
+  lr: 2.0e-5
+  batch_size: 128
+  total_iterations: 40000
+  save_interval: 10000
+  log_interval: 20
+  kld_weight: 0.0001
+  share_encoder: true
+  lambda_align: 1.0e-2
+  lambda_cross: 5.0e-4
+  lambda_infonce: 1.0e-3
+  lambda_decor: 0.0
+  use_decorrelation: false
+  use_fft_loss: false
+  fft_weight: 1.0
+  num_workers: 32
+  pin_memory: true
+
+data:
+  train_dir: ""
+  dataset: MIMIC-IV
+
+model:
+  use_shared_private: true
+  private_dim: 4
+  private_hidden_dim: 64
+  decoder:
+    seq_len: 1250
+    feat_dim: 1
+    latent_dim: 64
+    trend_poly: 2
+    custom_seas:
+      - [10, 128]

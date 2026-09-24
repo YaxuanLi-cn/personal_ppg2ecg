@@ -1,0 +1,11 @@
+
+===== /root/personal_ppg2ecg/v0/results/rectified_flow_baseline/mimic-iv-waveform/samples =====
+GT shape (178830, 1250, 1) | Fake shape (178830, 1250, 1)
+[INFO] ECGFounder checkpoint not found -> skipping FID.
+--- Metrics ---
+MAE     : 0.6142
+RMSE    : 0.9854
+FD      : 8.3972
+MAE_hr_paired: 2.5809
+MAE_hr_group: 0.9900
+FID     : N/A

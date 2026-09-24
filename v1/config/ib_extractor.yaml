@@ -1,0 +1,17 @@
+train:
+  lr: 2.0e-5
+  batch_size: 1024
+  total_iterations: 40000
+  save_interval: 10000
+  log_interval: 20
+  num_workers: 32
+  pin_memory: true
+
+data:
+  train_dir: ""  # Set to your LMDB training data directory
+  dataset: "MIMIC-IV"
+
+model:
+  embed_dim: 256
+  in_channel: 32
+  num_layers: 3

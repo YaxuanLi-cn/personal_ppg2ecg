@@ -1,0 +1,4 @@
+/venv/ppg/bin/python -B evaluation/run_eval.py \
+  --samples_dir results/final_test \
+  --sampling_rate 125 \
+  --workers 8

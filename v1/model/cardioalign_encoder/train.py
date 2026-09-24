@@ -12,7 +12,10 @@ project_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 sys.path.append(project_root_dir)
 os.chdir(project_root_dir)
 
-from model.cardioalign_encoder.cardioalign_model import VAE_Decoder, VAE_Encoder, loss_function
+from model.cardioalign_encoder.cardioalign_model import (
+    VAE_Decoder, VAE_Encoder, ECGPrivateEncoder, ECGDecoder, loss_function,
+    shared_private_decorrelation,
+)
 from utils.io_utils import load_yaml_config, seed_everything
 from utils.ppgecg_dataset import PPGECGDataset
 from torch.utils.data import Dataset, DataLoader
@@ -29,7 +32,7 @@ def parse_args():
     parser.add_argument(
         "--save_dir",
         type=str,
-        default="/root/autodl-tmp/personal_ppg2ecg/results/cardioalign_encoder/",
+        default=None,
         help="directory to save checkpoints",
     )
     parser.add_argument(
@@ -100,7 +103,15 @@ def train_loop(
     total_iterations=100000,
     save_interval=5000,
     log_interval=100,
+    private_encoder=None,
+    decoder_config=None,
+    lambda_decor=0.01,
+    use_decorrelation=True,
 ):
+    if private_encoder is not None and encoder_ppg is not None:
+        raise ValueError("Shared/private mode requires the existing shared CardioAlign encoder")
+    if private_encoder is not None:
+        private_encoder.train()
     size = len(dataloader.dataset)
     encoder_ecg.train()
     if encoder_ppg is not None:
@@ -131,8 +142,10 @@ def train_loop(
         else:
             z_ppg, mu_ppg, logvar_ppg = encoder_ppg(ppg)
 
+        r_ecg = private_encoder(ecg) if private_encoder is not None else None
+
         # Decode (self-reconstruction)
-        recons_ecg = decoder_ecg(z_ecg)
+        recons_ecg = decoder_ecg(z_ecg, r_ecg) if r_ecg is not None else decoder_ecg(z_ecg)
         recons_ppg = decoder_ppg(z_ppg)
 
         # Base VAE losses (optionally include FFT term)
@@ -161,17 +174,25 @@ def train_loop(
         # Optional cross reconstruction
         cross_loss = torch.tensor(0.0, device=ecg.device)
         if lambda_cross > 0.0:
-            cross_ecg_from_ppg = decoder_ecg(z_ppg.detach())
+            cross_ecg_from_ppg = (
+                decoder_ecg(z_ppg.detach(), r_ecg.detach())
+                if r_ecg is not None else decoder_ecg(z_ppg.detach())
+            )
             cross_ppg_from_ecg = decoder_ppg(z_ecg.detach())
             # Only MSE on cross terms to be conservative
             cross_loss = F.mse_loss(cross_ecg_from_ppg, ecg) + F.mse_loss(cross_ppg_from_ecg, ppg)
 
+        decor_loss = (
+            shared_private_decorrelation(z_ecg, r_ecg)
+            if r_ecg is not None and use_decorrelation else ecg.new_zeros(())
+        )
         total_loss = (
             loss_dict_ecg["loss"]
             + loss_dict_ppg["loss"]
             + lambda_align * latent_align_loss
             + lambda_cross * cross_loss
             + lambda_infonce * infonce_loss
+            + lambda_decor * decor_loss
         )
 
         total_loss.backward()
@@ -188,7 +209,11 @@ def train_loop(
                 f"ppg_loss: {loss_dict_ppg['loss'].item():>7f} (mse {loss_dict_ppg['mse'].item():>7f}  KLD {loss_dict_ppg['KLD'].item():>7f}) | "
                 f"align(L2+KL): {(latent_align_loss.item() if isinstance(latent_align_loss, torch.Tensor) else latent_align_loss):>7f} | "
                 f"cross: {(cross_loss.item() if isinstance(cross_loss, torch.Tensor) else cross_loss):>7f} | "
-                f"infonce: {(infonce_loss.item() if isinstance(infonce_loss, torch.Tensor) else infonce_loss):>7f}"
+                f"infonce: {(infonce_loss.item() if isinstance(infonce_loss, torch.Tensor) else infonce_loss):>7f} | "
+                f"align_l2: {align_l2.item():>7f} | align_kl: {align_kl.item():>7f} | "
+                f"ecg_fft: {float(loss_dict_ecg.get('fft_loss', 0.0)):>7f} | "
+                f"ppg_fft: {float(loss_dict_ppg.get('fft_loss', 0.0)):>7f} | "
+                f"decor: {decor_loss.item():>7f} | weighted_decor: {(lambda_decor * decor_loss).item():>7f}"
             )
 
         if save_weights_path and iteration % save_interval == 0:
@@ -205,8 +230,19 @@ def train_loop(
                     "lambda_align": lambda_align,
                     "lambda_cross": lambda_cross,
                     "lambda_infonce": lambda_infonce,
+                    "lambda_decor": lambda_decor,
+                    "use_decorrelation": use_decorrelation,
                 },
             }
+            model_states["representation"] = {
+                "use_shared_private": private_encoder is not None,
+                "private_dim": private_encoder.private_dim if private_encoder is not None else None,
+                "private_hidden_dim": private_encoder.hidden_dim if private_encoder is not None else None,
+                "share_encoder": encoder_ppg is None,
+                "decoder": decoder_config or {},
+            }
+            if private_encoder is not None:
+                model_states["private_encoder_ecg"] = private_encoder.state_dict()
             save_path = os.path.join(save_weights_path, f"VAE-iter-{iteration}.pth")
             torch.save(model_states, save_path)
             logger.info(f"Saved checkpoint at iteration {iteration}")
@@ -217,6 +253,7 @@ if __name__ == "__main__":
     config = load_yaml_config(args.config)
     seed_everything(args.seed, args.cudnn_deterministic)
 
+    args.save_dir = args.save_dir or config.get("train", {}).get("save_dir", "results/cardioalign_encoder")
     args.save_dir = os.path.join(args.save_dir, "mimic-iv-waveform")
     save_weights_path = os.path.join(args.save_dir, "checkpoints")
     os.makedirs(save_weights_path, exist_ok=True)
@@ -251,6 +288,8 @@ if __name__ == "__main__":
         "lambda_align": float(train_cfg.get("lambda_align", 1e-2)),
         "lambda_cross": float(train_cfg.get("lambda_cross", 5e-4)),
         "lambda_infonce": float(train_cfg.get("lambda_infonce", 1e-3)),
+        "lambda_decor": float(train_cfg.get("lambda_decor", 0.01)),
+        "use_decorrelation": bool(train_cfg.get("use_decorrelation", True)),
         "use_fft_loss": bool(train_cfg.get("use_fft_loss", False)),
         "fft_weight": float(train_cfg.get("fft_weight", 1.0)),
         "num_workers": int(train_cfg.get("num_workers", 32)),
@@ -282,9 +321,20 @@ if __name__ == "__main__":
         pin_memory=H_["pin_memory"],
     )
 
+    use_shared_private = bool(model_cfg.get("use_shared_private", False))
+    if use_shared_private and not H_["share_encoder"]:
+        raise ValueError("Shared/private mode requires train.share_encoder=true")
     encoder_ecg = VAE_Encoder().to(device)
     encoder_ppg = None if H_["share_encoder"] else VAE_Encoder().to(device)
-    decoder_ecg = VAE_Decoder(**decoder_cfg).to(device)
+    private_encoder = None
+    if use_shared_private:
+        private_encoder = ECGPrivateEncoder(
+            private_dim=int(model_cfg.get("private_dim", 4)),
+            hidden_dim=int(model_cfg.get("private_hidden_dim", 64)),
+        ).to(device)
+        decoder_ecg = ECGDecoder(private_dim=private_encoder.private_dim, **decoder_cfg).to(device)
+    else:
+        decoder_ecg = VAE_Decoder(**decoder_cfg).to(device)
     decoder_ppg = VAE_Decoder(**decoder_cfg).to(device)
 
     loss_fn = loss_function
@@ -292,6 +342,8 @@ if __name__ == "__main__":
     if encoder_ppg is not None:
         parameters += list(encoder_ppg.parameters())
     parameters += list(decoder_ecg.parameters()) + list(decoder_ppg.parameters())
+    if private_encoder is not None:
+        parameters += list(private_encoder.parameters())
     optimizer = torch.optim.AdamW(parameters, lr=H_["lr"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
@@ -320,6 +372,10 @@ if __name__ == "__main__":
         total_iterations=H_["total_iterations"],
         save_interval=H_["save_interval"],
         log_interval=H_["log_interval"],
+        private_encoder=private_encoder,
+        decoder_config=decoder_cfg,
+        lambda_decor=H_["lambda_decor"],
+        use_decorrelation=H_["use_decorrelation"],
     )
     logger.info("Training completed!")
 

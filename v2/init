@@ -1,0 +1,4 @@
+cd /root/personal_ppg2ecg/v2
+/venv/ppg/bin/python -B evaluate.py \
+  --checkpoint results/paired_v2/best.pt \
+  --output results/paired_v2/test_recheck

@@ -182,6 +182,7 @@ def main():
             sampling_steps,
             subset_save_threshold=subset_save_threshold,
             save_dir=os.path.join(args.save_dir, "samples"),
+            num_samples=int(sample_cfg.get('num_samples', 1)),
         )
 
     # elif args.condition_type == 2 and args.mode in ["synthesis"]:
@@ -307,7 +308,6 @@ def main():
                 # ---- 执行采样 ----
                 samples = trainer.sample(
                     ppg=ppg,
-                    ecg=ecg,
                     ppg_ref=ppg_ref,
                     ecg_ref=ecg_ref,
                     shape=[1250, 1],
@@ -395,7 +395,6 @@ def main():
                 # ---- 执行采样 ----
                 samples = trainer.sample(
                     ppg=ppg,
-                    ecg=ecg,
                     ppg_ref=ppg_ref,
                     ecg_ref=ecg_ref,
                     shape=[1250, 1],
