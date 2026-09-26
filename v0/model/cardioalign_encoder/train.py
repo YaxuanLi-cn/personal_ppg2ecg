@@ -12,9 +12,9 @@ project_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 sys.path.append(project_root_dir)
 os.chdir(project_root_dir)
 
-from model.cardioalign_encoder.cardioalign_model import VAE_Decoder, VAE_Encoder, loss_function
-from utils.io_utils import load_yaml_config, seed_everything
-from utils.ppgecg_dataset import PPGECGDataset
+from personal_ppg2ecg.v0.model.cardioalign_encoder.cardioalign_model import VAE_Decoder, VAE_Encoder, loss_function
+from personal_ppg2ecg.v0.utils.io_utils import load_yaml_config, seed_everything
+from personal_ppg2ecg.v0.utils.ppgecg_dataset import PPGECGDataset
 from torch.utils.data import Dataset, DataLoader
 # from utils.data import ECGDataset
 

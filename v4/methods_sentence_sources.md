@@ -1,6 +1,6 @@
 # Methods draft: sentence-level structural provenance
 
-The English Methods draft is in [`methods_draft.tex`](methods_draft.tex). Sentence IDs below number its prose sentences in reading order, starting from the first sentence of the Problem Formulation subsection; equations and headings are not counted. The entries identify the structural template for each sentence; they do not imply that the cited papers contain PSPFlow's technical contributions. The draft text is newly written and technically grounded in the v4 implementation.
+The English Methods draft is in [`methods_draft.tex`](methods_draft.tex). Sentence IDs below number its prose sentences in reading order, starting from the first sentence of the Problem Formulation subsection; equations and headings are not counted. The entries identify the structural template for each sentence; they do not imply that the cited papers contain PSPFlow's technical contributions. The draft text is newly written and technically grounded in the reported PSPFlow implementation.
 
 Primary sources:
 
@@ -50,7 +50,7 @@ Primary sources:
 
 ## Implementation alignment notes
 
-- The shared alignment term in v4 is normalized feature MSE, not an InfoNCE-style contrastive loss.
+- The shared alignment term in PSPFlow is normalized feature MSE, not an InfoNCE-style contrastive loss.
 - The patient encoder consumes one same-subject reference PPG/ECG window and produces a 256-dimensional vector. The current data protocol does not enforce that this window predates the target, so “historical” or “longitudinal” should be used cautiously.
 - The full-test result uses `stage_rep/best.pt` in deterministic `mean` mode. The flow checkpoint was evaluated during validation but was not used in the reported full test because its validation MAE/RMSE were substantially worse.
-- The v4 benchmark is a within-subject split. It does not establish subject-disjoint generalization.
+- The reported benchmark is a within-subject split. It does not establish subject-disjoint generalization.

@@ -13,8 +13,8 @@ sys.path.append(project_root_dir)
 os.chdir(project_root_dir)
 
 # ---- 导入模型 ----
-from model.Individual_base_extractor.ib_extractor import IBExtractor
-from utils.ppgecg_dataset import PPGECGDataset
+from personal_ppg2ecg.v0.model.Individual_base_extractor.ib_extractor import IBExtractor
+from personal_ppg2ecg.v0.utils.ppgecg_dataset import PPGECGDataset
 
 
 # ---- 配置 ----

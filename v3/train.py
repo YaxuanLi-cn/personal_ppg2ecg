@@ -6,11 +6,11 @@ import time
 import numpy as np
 import torch
 
-from data import load_data, PairedDataset
-from metrics import finish_metrics, paired_sums, zscore_numpy, calculate_fd_for_small_sample
-from paired_model import PairedECGHead, distribution_objective
-from pretrained import FrozenConditions, SHARED_CHECKPOINT, PATIENT_CHECKPOINT
-from runtime import V2_CHECKPOINT, V2_SPLIT, output_path, seed_all, loader, move
+from personal_ppg2ecg.v3.data import load_data, PairedDataset
+from personal_ppg2ecg.v3.metrics import finish_metrics, paired_sums, zscore_numpy, calculate_fd_for_small_sample
+from personal_ppg2ecg.v3.paired_model import PairedECGHead, distribution_objective
+from personal_ppg2ecg.v3.pretrained import FrozenConditions, SHARED_CHECKPOINT, PATIENT_CHECKPOINT
+from personal_ppg2ecg.v3.runtime import V2_CHECKPOINT, V2_SPLIT, output_path, seed_all, loader, move
 
 
 @torch.no_grad()

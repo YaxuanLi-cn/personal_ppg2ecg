@@ -3,9 +3,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from model import SharedPrivateModel
-from pretrained import FrozenConditions
-from runtime import fixed_noise
+from personal_ppg2ecg.v4.model import SharedPrivateModel
+from personal_ppg2ecg.v4.pretrained import FrozenConditions
+from personal_ppg2ecg.v4.runtime import fixed_noise
 
 
 class ECGPredictor:

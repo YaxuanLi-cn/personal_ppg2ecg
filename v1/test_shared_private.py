@@ -16,15 +16,15 @@ import torch
 import yaml
 from torch.utils.data import DataLoader, TensorDataset
 
-from engine.solver import Trainer
-from model.cardioalign_encoder.cardioalign_model import (
+from personal_ppg2ecg.v1.engine.solver import Trainer
+from personal_ppg2ecg.v1.model.cardioalign_encoder.cardioalign_model import (
     ECGDecoder, ECGPrivateEncoder, VAE_Decoder, VAE_Encoder,
     loss_function, shared_private_decorrelation,
 )
-from model.cardioalign_encoder.train import _infonce_loss, _kl_gaussians, train_loop
-from model.Individual_base_extractor.ib_extractor import IBExtractor
-from model.latent_rectified_flow.rectified_flow import PersonalRectifiedFlow, RectifiedFlow
-from utils.io_utils import instantiate_from_config, load_yaml_config, merge_opts_to_config
+from personal_ppg2ecg.v1.model.cardioalign_encoder.train import _infonce_loss, _kl_gaussians, train_loop
+from personal_ppg2ecg.v1.model.Individual_base_extractor.ib_extractor import IBExtractor
+from personal_ppg2ecg.v1.model.latent_rectified_flow.rectified_flow import PersonalRectifiedFlow, RectifiedFlow
+from personal_ppg2ecg.v1.utils.io_utils import instantiate_from_config, load_yaml_config, merge_opts_to_config
 
 
 ROOT = Path(__file__).resolve().parent

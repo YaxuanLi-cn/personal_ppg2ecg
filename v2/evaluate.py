@@ -7,10 +7,10 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from data import PairedDataset, load_data
-from metrics import paired_sums, finish_metrics, zscore_numpy
-from predict import ECGPredictor
-from train import loader, output_path, seed_all
+from personal_ppg2ecg.v2.data import PairedDataset, load_data
+from personal_ppg2ecg.v2.metrics import paired_sums, finish_metrics, zscore_numpy
+from personal_ppg2ecg.v2.predict import ECGPredictor
+from personal_ppg2ecg.v2.train import loader, output_path, seed_all
 
 ROOT = Path(__file__).resolve().parent
 

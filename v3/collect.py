@@ -6,9 +6,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from data import load_data, PairedDataset
-from predict import ECGPredictor
-from runtime import V2_SPLIT, V2_CHECKPOINT, loader, output_path, seed_all
+from personal_ppg2ecg.v3.data import load_data, PairedDataset
+from personal_ppg2ecg.v3.predict import ECGPredictor
+from personal_ppg2ecg.v3.runtime import V2_SPLIT, V2_CHECKPOINT, loader, output_path, seed_all
 
 
 def main():

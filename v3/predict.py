@@ -3,9 +3,9 @@ from pathlib import Path
 import torch
 from torch import nn
 
-from calibration import transport_tensor
-from paired_model import PairedECGHead
-from pretrained import FrozenConditions
+from personal_ppg2ecg.v3.calibration import transport_tensor
+from personal_ppg2ecg.v3.paired_model import PairedECGHead
+from personal_ppg2ecg.v3.pretrained import FrozenConditions
 
 
 class ECGPredictor(nn.Module):

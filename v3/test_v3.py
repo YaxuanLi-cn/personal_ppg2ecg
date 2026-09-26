@@ -6,10 +6,10 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from metrics import zscore_numpy, paired_sums, finish_metrics
-from data import reference_indices
-from paired_model import PairedECGHead, distribution_objective
-from runtime import output_path
+from personal_ppg2ecg.v3.metrics import zscore_numpy, paired_sums, finish_metrics
+from personal_ppg2ecg.v3.data import reference_indices
+from personal_ppg2ecg.v3.paired_model import PairedECGHead, distribution_objective
+from personal_ppg2ecg.v3.runtime import output_path
 
 
 class V3Tests(unittest.TestCase):
@@ -51,7 +51,7 @@ class V3Tests(unittest.TestCase):
             torch.testing.assert_close(model(*inputs)[0], loaded(*inputs)[0], atol=0, rtol=0)
 
     def test_fd_and_legacy_hr_masks(self):
-        from metrics import calculate_fd_for_small_sample, heart_rate_metrics
+        from personal_ppg2ecg.v3.metrics import calculate_fd_for_small_sample, heart_rate_metrics
         x = np.random.default_rng(7).normal(size=(100, 8))
         fd, _ = calculate_fd_for_small_sample(x, x + 2, pca_dim=None)
         self.assertAlmostEqual(fd, 32, places=9)
@@ -59,8 +59,8 @@ class V3Tests(unittest.TestCase):
         self.assertEqual(hr, {'MAE_hr_paired': 2., 'MAE_hr_group': 6.})
 
     def test_transport_fits_only_supplied_training_and_is_batch_independent(self):
-        from calibration import fit_transport, apply_transport, transport_tensor
-        from metrics import calculate_fd_for_small_sample
+        from personal_ppg2ecg.v3.calibration import fit_transport, apply_transport, transport_tensor
+        from personal_ppg2ecg.v3.metrics import calculate_fd_for_small_sample
         rng = np.random.default_rng(5)
         real = rng.normal(size=(512, 32, 1))
         fake = real * np.linspace(0.5, 2., 32)[None, :, None]
@@ -91,7 +91,7 @@ class V3Tests(unittest.TestCase):
         self.assertEqual(implementations[0], implementations[1])
 
     def test_public_inference_excludes_target(self):
-        from predict import ECGPredictor
+        from personal_ppg2ecg.v3.predict import ECGPredictor
         self.assertEqual(list(inspect.signature(ECGPredictor.forward).parameters), ['self', 'ppg', 'ppg_ref', 'ecg_ref'])
 
     def test_output_isolation(self):

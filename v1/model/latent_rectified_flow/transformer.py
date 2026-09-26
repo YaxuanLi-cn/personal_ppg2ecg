@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 from torch import nn
 from einops import rearrange, reduce, repeat
-from model.latent_rectified_flow.model_utils import (
+from personal_ppg2ecg.v1.model.latent_rectified_flow.model_utils import (
     LeadEmbedding,
     LearnablePositionalEncoding,
     Conv_MLP,

@@ -1,0 +1,17 @@
+{
+  "metric_direction": "lower_is_better",
+  "metrics": ["MAE", "RMSE", "FD", "MAE_hr_paired"],
+  "main_comparison": [
+    {"method": "UniCardio", "n": 178830, "subset": false, "MAE": 1.0725, "RMSE": 1.4142, "FD": 136.0714, "MAE_hr_paired": 42.5108, "source": "baseline/UniCardio/results/unicardio/eval_final_20k/comparison.json"},
+    {"method": "CardioGAN", "n": 178830, "subset": false, "MAE": 1.0516, "RMSE": 1.4158, "FD": 1681.7201, "MAE_hr_paired": 19.6028, "source": "baseline/CardioGAN/results/cardiogan/samples_20k/five_metrics.json"},
+    {"method": "CLEP-GAN", "n": 178830, "subset": false, "MAE": 1.0190, "RMSE": 1.4115, "FD": 140.1938, "MAE_hr_paired": 4.4939, "source": "baseline/CLEP-GAN/results/clepgan/test_final/five_metrics.json"},
+    {"method": "RDDM", "n": 178830, "subset": false, "MAE": 1.0641, "RMSE": 1.4039, "FD": 359.6043, "MAE_hr_paired": 34.2153, "source": "baseline/rddm/results/rddm_t10/metrics.json"},
+    {"method": "CardioFlow", "n": 178830, "subset": false, "MAE": 0.5703, "RMSE": 0.9141, "FD": 3.7278, "MAE_hr_paired": 2.6162, "source": "user-provided result summary"},
+    {"method": "PSPFlow", "n": 178830, "subset": false, "MAE": 0.3688, "RMSE": 0.6444, "FD": 2.6592, "MAE_hr_paired": 1.8991, "source": "results/final_test/five_metrics.json"}
+  ],
+  "ablation": [
+    {"method": "Baseline", "MAE": 0.6142, "RMSE": 0.9854, "FD": 8.3972, "MAE_hr_paired": 2.5809, "source": "user-provided result summary"},
+    {"method": "Patient-context-only", "MAE": 0.5204, "RMSE": 0.8752, "FD": 7.5225, "MAE_hr_paired": 2.5212, "source": "results/final_test/comparison.json"},
+    {"method": "PSPFlow", "MAE": 0.3688, "RMSE": 0.6444, "FD": 2.6592, "MAE_hr_paired": 1.8991, "source": "results/final_test/five_metrics.json"}
+  ]
+}

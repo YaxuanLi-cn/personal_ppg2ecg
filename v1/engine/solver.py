@@ -10,9 +10,9 @@ from ema_pytorch import EMA
 from torch.optim import Adam
 import torch.nn.functional as F
 from torch.nn.utils import clip_grad_norm_
-from model.cardioalign_encoder.cardioalign_model import VAE_Decoder, VAE_Encoder, ECGPrivateEncoder, ECGDecoder
-from model.Individual_base_extractor.ib_extractor import IBExtractor
-from utils.io_utils import instantiate_from_config, get_model_parameters_info
+from personal_ppg2ecg.v1.model.cardioalign_encoder.cardioalign_model import VAE_Decoder, VAE_Encoder, ECGPrivateEncoder, ECGDecoder
+from personal_ppg2ecg.v1.model.Individual_base_extractor.ib_extractor import IBExtractor
+from personal_ppg2ecg.v1.utils.io_utils import instantiate_from_config, get_model_parameters_info
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 

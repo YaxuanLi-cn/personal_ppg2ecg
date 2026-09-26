@@ -6,10 +6,10 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from data import PairedDataset, load_data
-from predict import ECGPredictor
-from runtime import ROOT, output_path, seed_all, loader, source_manifest
-from evaluation.run_eval import evaluate
+from personal_ppg2ecg.v3.data import PairedDataset, load_data
+from personal_ppg2ecg.v3.predict import ECGPredictor
+from personal_ppg2ecg.v3.runtime import ROOT, output_path, seed_all, loader, source_manifest
+from personal_ppg2ecg.v3.evaluation.run_eval import evaluate
 
 
 BASELINES = {

@@ -3,8 +3,8 @@ from pathlib import Path
 import torch
 from torch import nn
 
-from paired_model import PairedECGHead
-from pretrained import FrozenConditions
+from personal_ppg2ecg.v2.paired_model import PairedECGHead
+from personal_ppg2ecg.v2.pretrained import FrozenConditions
 
 
 class ECGPredictor(nn.Module):

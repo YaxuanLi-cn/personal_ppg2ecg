@@ -11,7 +11,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from metrics import calculate_fd_for_small_sample, ecg_bpm_array, heart_rate_metrics, zscore_numpy
+from personal_ppg2ecg.v2.metrics import calculate_fd_for_small_sample, ecg_bpm_array, heart_rate_metrics, zscore_numpy
 
 
 def _heart_rate_chunk(args):

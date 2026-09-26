@@ -2,8 +2,8 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from tqdm.auto import tqdm
-from model.latent_rectified_flow.transformer import Transformer, PersonalTransformer
-from model.latent_rectified_flow.model_utils import GELU2
+from personal_ppg2ecg.v1.model.latent_rectified_flow.transformer import Transformer, PersonalTransformer
+from personal_ppg2ecg.v1.model.latent_rectified_flow.model_utils import GELU2
 
 
 def extend(t: torch.Tensor, shape: torch.Size):

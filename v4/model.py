@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from metrics import zscore_tensor
+from personal_ppg2ecg.v4.metrics import zscore_tensor
 
 
 class Block(nn.Module):

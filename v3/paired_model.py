@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from metrics import zscore_tensor
+from personal_ppg2ecg.v3.metrics import zscore_tensor
 
 
 class ResidualBlock(nn.Module):

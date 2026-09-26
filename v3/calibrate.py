@@ -6,9 +6,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from calibration import apply_transport, fit_transport
-from evaluation.run_eval import evaluate
-from runtime import output_path, V2_SPLIT
+from personal_ppg2ecg.v3.calibration import apply_transport, fit_transport
+from personal_ppg2ecg.v3.evaluation.run_eval import evaluate
+from personal_ppg2ecg.v3.runtime import output_path, V2_SPLIT
 
 TARGETS = {'MAE': 0.39591144402467815, 'RMSE': 0.6698436880509359, 'FD': 0.4554,
            'MAE_hr_paired': 2.2012139397624995, 'MAE_hr_group': 0.5570}

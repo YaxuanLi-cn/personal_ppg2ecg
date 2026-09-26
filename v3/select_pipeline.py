@@ -4,7 +4,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from runtime import ROOT, output_path
+from personal_ppg2ecg.v3.runtime import ROOT, output_path
 
 
 def main():

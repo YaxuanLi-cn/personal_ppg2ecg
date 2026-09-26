@@ -7,11 +7,11 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from metrics import finish_metrics, paired_sums, zscore_numpy, zscore_tensor
-from data import PairedDataset, split_indices, reference_indices
-from train import output_path
-from predict import ECGPredictor
-from paired_model import PairedECGHead, paired_objective
+from personal_ppg2ecg.v2.metrics import finish_metrics, paired_sums, zscore_numpy, zscore_tensor
+from personal_ppg2ecg.v2.data import PairedDataset, split_indices, reference_indices
+from personal_ppg2ecg.v2.train import output_path
+from personal_ppg2ecg.v2.predict import ECGPredictor
+from personal_ppg2ecg.v2.paired_model import PairedECGHead, paired_objective
 
 
 class V2Tests(unittest.TestCase):
@@ -125,7 +125,7 @@ class V2Tests(unittest.TestCase):
 
 class FiveMetricTests(unittest.TestCase):
     def test_fd_identical_and_translation(self):
-        from metrics import calculate_fd_for_small_sample
+        from personal_ppg2ecg.v2.metrics import calculate_fd_for_small_sample
         rng = np.random.default_rng(19)
         gt = rng.normal(size=(100, 8, 1))
         fd, std = calculate_fd_for_small_sample(gt, gt.copy(), pca_dim=None, n_trials=3)
@@ -135,7 +135,7 @@ class FiveMetricTests(unittest.TestCase):
         self.assertAlmostEqual(fd, 32., places=10)
 
     def test_hr_masks_match_legacy(self):
-        from metrics import heart_rate_metrics
+        from personal_ppg2ecg.v2.metrics import heart_rate_metrics
         real = np.array([60., 80., -1., np.nan, 70.])
         fake = np.array([62., 76., -1., 90., np.nan])
         result = heart_rate_metrics(real, fake)
@@ -144,7 +144,7 @@ class FiveMetricTests(unittest.TestCase):
 
     def test_legacy_cleaning_rate_is_preserved(self):
         from unittest.mock import patch
-        from metrics import ecg_bpm_array
+        from personal_ppg2ecg.v2.metrics import ecg_bpm_array
         x = np.zeros((2, 1250, 1))
         with patch('neurokit2.ecg_clean', side_effect=lambda x, **kwargs: x) as clean:
             with patch('metrics.heartbeats_ecg', return_value=([0, 1], [60., 62.])) as beats:
@@ -156,8 +156,8 @@ class FiveMetricTests(unittest.TestCase):
                 clean.assert_not_called()
 
     def test_serial_parallel_hr_equal(self):
-        from evaluation.run_eval import compute_heart_rates
-        from metrics import ecg_bpm_array
+        from personal_ppg2ecg.v2.evaluation.run_eval import compute_heart_rates
+        from personal_ppg2ecg.v2.metrics import ecg_bpm_array
         length = 1250
         t = np.arange(length)
         x = sum(np.exp(-0.5 * ((t - peak) / 2.) ** 2) for peak in range(90, length - 50, 125))

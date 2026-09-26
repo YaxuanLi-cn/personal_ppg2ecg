@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from scipy.linalg import eigh
 
-from metrics import zscore_numpy, zscore_tensor
+from personal_ppg2ecg.v4.metrics import zscore_numpy, zscore_tensor
 
 
 def matrix_power_psd(matrix, exponent):

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from metrics import finish_metrics, paired_sums
+from personal_ppg2ecg.v2.metrics import finish_metrics, paired_sums
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent

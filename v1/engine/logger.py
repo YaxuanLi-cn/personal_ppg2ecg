@@ -5,7 +5,7 @@ from __future__ import print_function
 import os
 import time
 import torch
-from utils.io_utils import write_args, save_config_to_yaml
+from personal_ppg2ecg.v1.utils.io_utils import write_args, save_config_to_yaml
 import tensorboardX
 
 class Logger(object):

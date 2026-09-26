@@ -1,0 +1,102 @@
+% Experiments section for insertion after Methods.
+% The figures are copied to the repository-level figs/ directory as well.
+
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Experimental setup}
+\label{sec:experimental-setup}
+
+We evaluate PPG-to-ECG synthesis on the processed MIMIC-IV Waveform dataset using 10-s windows of 1,250 samples acquired at 125~Hz. The preprocessing uses a fixed within-subject split, with windows randomly split within each subject. At inference time, every target window is paired with a distinct reference window from the same subject, while the target ECG is withheld from the inference pathway. Unless stated otherwise, we report per-window z-score MAE and RMSE, Fr\'echet distance (FD), and HR-MAE, where lower values indicate better performance.
+
+The evaluator computes FD after a joint, unwhitened PCA projection to 64 dimensions, adds $10^{-4}$ to each covariance diagonal, and averages three trials. The HR-MAE score follows the repository's legacy protocol: the generated ECG is cleaned at a hard-coded 128~Hz, whereas the real ECG is not filtered before peak extraction. We therefore use this metric for direct comparison with the released baselines and interpret it as a protocol-specific diagnostic rather than a calibrated clinical heart-rate estimate.
+
+For PSPFlow, we report the deterministic mean predictor from \texttt{stage\_rep/best.pt}, selected using training-only validation MAE plus RMSE; the learned flow residual is omitted because it performed worse on that validation split.
+
+\paragraph{Compared methods.}
+We compare against all independently implemented baselines in the repository: CardioGAN~\citep{sarkar2021cardiogan}, CLEP-GAN~\citep{li2025clepgan}, RDDM~\citep{shome2024rddm}, CardioFlow~\citep{nambu2025cardioflow}, and UniCardio~\citep{chen2026unicardio}. CardioGAN uses an attention-based adversarial generator with time- and frequency-domain discriminators, CLEP-GAN combines contrastive and adversarial learning with attention gating, RDDM uses a region-guided diffusion process, CardioFlow uses peak-aware rectified flow, and UniCardio uses a unified diffusion transformer. All implementations use the same normalized 125~Hz, 1,250-sample MIMIC-IV protocol and the shared evaluator.
+
+\subsection{Main results}
+\label{sec:main-results}
+
+Table~\ref{tab:main-results} summarizes the comparison. PSPFlow obtains the lowest value for every reported metric, with MAE of 0.37, RMSE of 0.64, FD of 2.66, and HR-MAE of 1.90. Relative to the strongest external method, CardioFlow, PSPFlow reduces MAE by 35.3\%, RMSE by 29.5\%, FD by 28.7\%, and HR-MAE by 27.4\%. These gains are observed simultaneously in pointwise waveform agreement, distributional similarity, and beat-rate consistency, which is consistent with the intended separation of PPG-observable and ECG-private information.
+
+\begin{table}[t]
+\centering
+\caption{Comparison with PPG-to-ECG baselines on MIMIC-IV. All metrics are lower-is-better. The Ref. column gives the publication venue and year for each baseline.}
+\label{tab:main-results}
+\setlength{\tabcolsep}{4.5pt}
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llrrrr}
+\hline
+Method & Ref. & MAE $\downarrow$ & RMSE $\downarrow$ & FD $\downarrow$ & HR-MAE $\downarrow$ \\
+\hline
+UniCardio & Nat. Mach. Intell.~2026~\citep{chen2026unicardio} & 1.07 & 1.41 & 136.07 & 42.51 \\
+CardioGAN & AAAI~2021~\citep{sarkar2021cardiogan} & 1.05 & 1.42 & 1681.72 & 19.60 \\
+CLEP-GAN & BMC Bioinformatics~2025~\citep{li2025clepgan} & 1.02 & 1.41 & 140.19 & 4.49 \\
+RDDM & AAAI~2024~\citep{shome2024rddm} & 1.06 & 1.40 & 359.60 & 34.22 \\
+CardioFlow & ICASSP~2025~\citep{nambu2025cardioflow} & 0.57 & 0.91 & 3.73 & 2.62 \\
+\hline
+PSPFlow & Ours & \textbf{0.37} & \textbf{0.64} & \textbf{2.66} & \textbf{1.90} \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+Figure~\ref{fig:benchmark-metrics} presents the same comparison with four fixed linear-axis panels and explicit value annotations. The gap is particularly pronounced for FD: PSPFlow reduces FD by 28.7\% relative to CardioFlow and 98.1\% relative to CLEP-GAN, while retaining the lowest pointwise and HR-MAE errors.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{figs/benchmark_metrics.pdf}
+    \caption{Test-set comparison across the four reported metrics. The panels use horizontal linear axes with four readable major ticks, order methods from the smallest to the largest value, and annotate each bar with its value; lower is better.}
+    \label{fig:benchmark-metrics}
+\end{figure*}
+
+\subsection{Ablation study}
+\label{sec:ablation}
+
+We conduct an ablation study to isolate the contribution of patient context and shared--private factorization. We compare the basic latent rectified-flow baseline, which uses neither patient context nor the shared--private strategy, with a patient-context-only variant and PSPFlow, which combines patient context with shared--private ECG factorization. All three variants use the same four reported metrics and the same lower-is-better convention.
+
+\begin{table}[t]
+\centering
+\caption{Ablation of patient conditioning and shared--private factorization. The basic baseline uses neither patient context nor shared--private factorization; the patient-context-only variant adds patient context; PSPFlow combines patient context with shared--private factorization.}
+\label{tab:ablation}
+\setlength{\tabcolsep}{4.5pt}
+\small
+\begin{tabular}{lrrrr}
+\hline
+Configuration & MAE $\downarrow$ & RMSE $\downarrow$ & FD $\downarrow$ & HR-MAE $\downarrow$ \\
+\hline
+Basic baseline & 0.61 & 0.99 & 8.40 & 2.58 \\
+Patient-context-only & 0.52 & 0.88 & 7.52 & 2.52 \\
+PSPFlow & \textbf{0.37} & \textbf{0.64} & \textbf{2.66} & \textbf{1.90} \\
+\hline
+\end{tabular}
+\end{table}
+
+As shown in Table~\ref{tab:ablation}, adding patient context to the basic model reduces MAE, RMSE, FD, and HR-MAE by 15.3\%, 11.2\%, 10.4\%, and 2.3\%, respectively. Adding the shared--private factorization on top of the patient-context-only variant produces a further reduction of 29.1\%, 26.4\%, 64.7\%, and 24.7\% on the same metrics. The largest incremental change occurs in FD, supporting the interpretation that explicitly reserving an ECG-private subspace improves the distribution of generated morphologies rather than merely reducing pointwise error. Relative to the basic baseline, PSPFlow reduces MAE by 40.0\%, RMSE by 34.6\%, FD by 68.3\%, and HR-MAE by 26.4\%.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{figs/ablation_improvements.pdf}
+    \caption{Ablation results normalized by the basic baseline, which is set to 100\%. Lower values indicate better performance. PSPFlow combines patient context with shared--private factorization.}
+    \label{fig:ablation-improvements}
+\end{figure}
+
+\subsection{Qualitative analysis}
+\label{sec:qualitative}
+
+Figure~\ref{fig:qualitative-waveforms} shows representative 10-s windows together with the input PPG, the target ECG, and outputs from the principal waveform baselines. PSPFlow follows the target beat timing while retaining sharper local complexes and smoother inter-beat morphology than the comparison outputs in these examples. The visual comparison is consistent with the quantitative results: CardioFlow preserves the broad rhythm but exhibits larger local deviations, whereas RDDM and CLEP-GAN show more visible amplitude and morphology discrepancies. These examples are illustrative rather than a substitute for the full-test metrics in Table~\ref{tab:main-results}.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{figs/qualitative_waveforms.pdf}
+    \caption{Qualitative comparison on three test windows. Left: input PPG, target ECG, and PSPFlow output. Right: target ECG and outputs from CardioFlow, RDDM, CLEP-GAN, and PSPFlow. Each waveform is independently standardized for visualization.}
+    \label{fig:qualitative-waveforms}
+\end{figure*}
+
+\subsection{Scope and limitations of the reported comparison}
+\label{sec:experiment-limitations}
+
+The reported split is within-subject, and the reference window is sampled from the same split without enforcing temporal precedence; consequently, these experiments measure personalized interpolation within observed subjects rather than unseen-patient or causal historical generalization. In addition, the frozen reference encoders used by PSPFlow were pretrained on the training pool, including the fine-tuning validation subset, so the validation split is not an end-to-end pristine holdout. Finally, the available results establish waveform and heart-rate fidelity on MIMIC-IV, but they do not by themselves establish downstream diagnostic performance or three-dataset generalization; those claims require additional labeled datasets and task-specific evaluations.

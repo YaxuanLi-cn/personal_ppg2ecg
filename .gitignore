@@ -51,10 +51,15 @@ results_preprocess_smoke/
 *.dat
 *.hea
 
-# Experiment outputs and nested repository
+# Experiment outputs and generated caches
 **/results/
-baseline/
-v0/baseline/
-UniCardio/
+**/__pycache__/
+**/.pytest_cache/
+
+# Keep baseline source code, but exclude its generated outputs and embedded
+# checkout metadata.
+baseline/**/results/
+baseline/**/.git/
+baseline/**/__pycache__/
 
 # Keep logs tracked intentionally.

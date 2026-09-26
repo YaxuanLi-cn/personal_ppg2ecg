@@ -16,7 +16,7 @@ import numpy as np
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from evaluation.calculate_metric import (
+from personal_ppg2ecg.v0.evaluation.calculate_metric import (
     calculate_mae, calculate_rmse, calculate_fd, calculate_fd_for_small_sample,
     zscore_per_sample, MAE_hr, calculate_FID_score, compute_representations_in_batches,
     ecg_bpm_array,
@@ -36,7 +36,7 @@ def load_pair(samples_dir):
 def try_load_ecgfounder(ckpt_path):
     """Return an ECGFounder feature extractor, or None if checkpoint missing."""
     import torch
-    from evaluation.calculate_metric import Net1D
+    from personal_ppg2ecg.v0.evaluation.calculate_metric import Net1D
     import torch.nn as nn
     if not (ckpt_path and os.path.exists(ckpt_path)):
         return None

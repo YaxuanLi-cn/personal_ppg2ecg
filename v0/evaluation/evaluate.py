@@ -16,7 +16,7 @@ sys.path.append(project_root_dir)
 os.chdir(project_root_dir)
 
 # 假设这些函数都在你的 evaluation.calculate_metric 中
-from evaluation.calculate_metric import *
+from personal_ppg2ecg.v0.evaluation.calculate_metric import *
 
 def calculate_fd_multi_sub(
     dir,

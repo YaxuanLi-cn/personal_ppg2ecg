@@ -10,13 +10,13 @@ import torch
 
 ROOT = Path(__file__).resolve().parent
 
-from data import PairedDataset, load_data, reference_indices, split_indices, subject_groups
-from metrics import (paired_sums, finish_metrics, zscore_numpy, zscore_tensor,
+from personal_ppg2ecg.v4.data import PairedDataset, load_data, reference_indices, split_indices, subject_groups
+from personal_ppg2ecg.v4.metrics import (paired_sums, finish_metrics, zscore_numpy, zscore_tensor,
                      calculate_fd_for_small_sample, ecg_bpm_array, heart_rate_metrics)
-from model import SharedPrivateModel
-from pretrained import FrozenConditions
-from predict import ECGPredictor
-from runtime import fixed_noise, save_checkpoint
+from personal_ppg2ecg.v4.model import SharedPrivateModel
+from personal_ppg2ecg.v4.pretrained import FrozenConditions
+from personal_ppg2ecg.v4.predict import ECGPredictor
+from personal_ppg2ecg.v4.runtime import fixed_noise, save_checkpoint
 
 V2_ROOT = ROOT.parent / 'v2'
 

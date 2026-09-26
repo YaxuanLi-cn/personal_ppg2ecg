@@ -7,11 +7,11 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from data import PairedDataset, load_data
-from metrics import paired_sums, finish_metrics
-from model import SharedPrivateModel
-from pretrained import FrozenConditions
-from runtime import ROOT, output_path, seed_all, loader, move, fixed_noise, save_checkpoint, append_json
+from personal_ppg2ecg.v4.data import PairedDataset, load_data
+from personal_ppg2ecg.v4.metrics import paired_sums, finish_metrics
+from personal_ppg2ecg.v4.model import SharedPrivateModel
+from personal_ppg2ecg.v4.pretrained import FrozenConditions
+from personal_ppg2ecg.v4.runtime import ROOT, output_path, seed_all, loader, move, fixed_noise, save_checkpoint, append_json
 
 V2_SPLIT = ROOT.parent / 'v2/results/paired_v2/split.npz'
 

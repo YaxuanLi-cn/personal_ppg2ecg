@@ -6,9 +6,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from data import PairedDataset, load_data
-from predict import ECGPredictor
-from runtime import ROOT, output_path, seed_all, loader
+from personal_ppg2ecg.v4.data import PairedDataset, load_data
+from personal_ppg2ecg.v4.predict import ECGPredictor
+from personal_ppg2ecg.v4.runtime import ROOT, output_path, seed_all, loader
 
 V2_SPLIT = ROOT.parent / 'v2/results/paired_v2/split.npz'
 

@@ -84,7 +84,7 @@ We add an endpoint waveform term by estimating the residual endpoint as $z_t+(1-
 \label{sec:data-protocol}
 We split windows within subjects and draw each reference from a distinct window belonging to the target subject. Training and validation references are drawn from the training-fit pool, whereas test references are drawn from the test split using a fixed seed. Because the split is not subject-disjoint and reference windows are not constrained to precede their targets in time, these experiments do not establish unseen-patient generalization or causal historical conditioning.
 
-% Implementation caveat: the reported v4 full-test checkpoint uses the deterministic
+% Implementation caveat: the reported PSPFlow full-test checkpoint uses the deterministic
 % mean predictor. The flow stage is described above because it is part of the trained
 % model, but it was not used to produce the reported full-test result. The reference
 % protocol samples one same-subject window and does not enforce temporal precedence.

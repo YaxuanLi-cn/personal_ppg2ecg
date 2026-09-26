@@ -6,9 +6,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from calibration import apply_transport, fit_transport
-from evaluation.run_eval import evaluate
-from runtime import output_path, ROOT
+from personal_ppg2ecg.v4.calibration import apply_transport, fit_transport
+from personal_ppg2ecg.v4.evaluation.run_eval import evaluate
+from personal_ppg2ecg.v4.runtime import output_path, ROOT
 
 V2_SPLIT = ROOT.parent / 'v2/results/paired_v2/split.npz'
 

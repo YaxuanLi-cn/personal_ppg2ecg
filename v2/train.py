@@ -10,10 +10,10 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from data import PairedDataset, load_data, split_indices
-from metrics import finish_metrics, paired_sums, zscore_numpy
-from paired_model import PairedECGHead, paired_objective
-from pretrained import FrozenConditions, SHARED_CHECKPOINT, PATIENT_CHECKPOINT
+from personal_ppg2ecg.v2.data import PairedDataset, load_data, split_indices
+from personal_ppg2ecg.v2.metrics import finish_metrics, paired_sums, zscore_numpy
+from personal_ppg2ecg.v2.paired_model import PairedECGHead, paired_objective
+from personal_ppg2ecg.v2.pretrained import FrozenConditions, SHARED_CHECKPOINT, PATIENT_CHECKPOINT
 
 ROOT = Path(__file__).resolve().parent
 
